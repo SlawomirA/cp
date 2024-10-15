@@ -1,0 +1,21 @@
+{
+  "base_path": ".\\KoboldCPP",
+  "engine_name": "koboldcpp.exe",
+  "model_name": "mistral-7b-instruct-v0.2.Q8_0.gguf",
+  "port": 5001,
+  "api_generate_url": "/api/v1/generate",
+  "log_name": "engine.log",
+  "show_log_in_console": true,
+  "max_context_length": 32000,
+  "temperature": 0.5,
+  "max_length": 500,
+  "quiet": false,
+  "repetition_penalty": 1.1,
+  "rep_pen_range": 256,
+  "tfs": 1,
+  "top_a": 0.0,
+  "top_k": 100,
+  "top_p": 0.9,
+  "typical": 1,
+  "min_p": 0.0
+}

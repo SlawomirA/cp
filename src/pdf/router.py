@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from keybert import KeyBERT
 from pdf2image import convert_from_path
 from pydantic import BaseModel
 import subprocess
@@ -12,12 +13,14 @@ from starlette.responses import PlainTextResponse
 import spacy
 import language_tool_python
 
+from src.engine import Engine
+
 router = APIRouter()
 
 pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
-
+model = KeyBERT('distilbert-base-nli-mean-tokens')
 
 class PDFUrlResponse(BaseModel):
     pdf_urls: List[str]
@@ -106,20 +109,36 @@ async def correct_text(input_text: str):
         raise HTTPException(status_code=500, detail=f"Error processing the text: {str(e)}")
 
 
-@router.post("/correct-text", tags=['etap3'])
-async def correct_text(input_text: str):
+@router.post("/ask-for-advice", tags=['etap3'])
+async def ask_for_advice(input_text: str, question: str):
     try:
-        original_text = input_text
-        corrected_text = str(tool.correct(original_text))
-
-        sanitized_text = original_text.replace("\r\n", "\n").replace("\r", "\n")
+        engine = Engine()
+        result = engine.connection(input_text, question)
 
         return {
-            "original_text": sanitized_text,
-            "corrected_text": corrected_text
+            "prompt": engine.create_prompt(input_text, question),
+            "answer": result
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the text: {str(e)}")
+
+
+@router.post("/extract-keywords")
+async def extract_keywords(request: str, number_of_cases: int):
+    try:
+        keywords = model.extract_keywords(
+            request,
+            keyphrase_ngram_range=(1, 2),
+            stop_words=None,
+            top_n=number_of_cases
+        )
+
+        return {
+            "keywords": [{"keyword": kw[0], "score": kw[1]} for kw in keywords]
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error extracting keywords: {str(e)}")
 
 
 # @router.post("/upload_pdf/")
