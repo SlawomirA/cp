@@ -17,8 +17,8 @@ from starlette.responses import PlainTextResponse
 
 from src.database import SessionLocal
 from src.http_models import DetailedResponse
-from src.models import File_Keyword, File_Model
-from src.response_models import FileModelResponse
+from src.models import File_Keyword, File_Model, LLM_Message
+from src.response_models import FileModelResponse, LLMMessageResponse
 
 router = APIRouter()
 
@@ -70,6 +70,22 @@ async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(
         print(f"Error occurred: {e}")
         return DetailedResponse(code=500, message="Error", error=str(e))
 
+@router.post("/save-chat-history", tags=["crud_etap3"], response_model=DetailedResponse)
+async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = None,  db: Session = Depends(get_db)) -> DetailedResponse:
+    if file_id is not None:
+        file_exists = db.execute(select(File_Model).filter_by(FI_ID=file_id)).scalars().first()
+        if not file_exists:
+            raise HTTPException(status_code=404, detail="File not found")
+
+    try:
+        llm_message = LLM_Message(Prompt=prompt, Answer=answer, FI_ID=file_id)
+        db.add(llm_message)
+        db.commit()
+        return DetailedResponse(code=201, message="Correctly saved", data=LLMMessageResponse.from_orm(llm_message))
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Error occurred: {e}")
+        return DetailedResponse(code=500, message="Error", error=str(e))
 
 @router.patch("/save-corrected-text", tags=["crud_etap2"], response_model=DetailedResponse)
 async def save_corrected_text(fileId: int, corrected_text: str, db: Session = Depends(get_db)) -> DetailedResponse:
