@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
 from src.pdf.router import router as pdf_router
+from src.pdf.crud_router import router as crud_router
 
 app = FastAPI()
 
 app.include_router(pdf_router)
+app.include_router(crud_router)
 
 
 @app.get("/", tags=["Health check"])

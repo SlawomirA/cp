@@ -38,6 +38,7 @@ async def download_pdf(url: str, filename: str):
         with open(file_path, 'wb') as f:
             f.write(response.content)
 
+
         return {"message": "PDF downloaded successfully", "file_path": file_path}
 
     except Exception as e:
@@ -81,9 +82,9 @@ async def upload_pdf(file: UploadFile = File(...)):
         temp_file.write(content)
 
     try:
-        images = convert_from_path(temp_file_path)  # PDF to images
+        images = convert_from_path(temp_file_path)  #PDF to images
 
-        extracted_text = ""  # OCR on each image, collect the text
+        extracted_text = ""  #OCR on each image, collect the text
         for image in images:
             text = pytesseract.image_to_string(image, lang='pol')
             extracted_text += text + "\n"
@@ -123,7 +124,7 @@ async def ask_for_advice(input_text: str, question: str):
         raise HTTPException(status_code=500, detail=f"Error processing the text: {str(e)}")
 
 
-@router.post("/extract-keywords")
+@router.post("/extract-keywords", tags=['etap3'])
 async def extract_keywords(request: str, number_of_cases: int):
     try:
         keywords = model.extract_keywords(
@@ -139,14 +140,3 @@ async def extract_keywords(request: str, number_of_cases: int):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error extracting keywords: {str(e)}")
-
-
-# @router.post("/upload_pdf/")
-# async def upload_pdf(file: UploadFile = File(...)):
-#     db = SessionLocal()
-#     pdf_data = await file.read()
-#     db_pdf = PDFFile(file_data=pdf_data)
-#     db.add(db_pdf)
-#     db.commit()
-#     db.refresh(db_pdf)
-#     return {"file_id": db_pdf.id}
