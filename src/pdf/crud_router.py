@@ -50,6 +50,27 @@ async def save_file(name: str, url: str, content: Optional[str] = None, db: Sess
         print(f"Error occurred while saving file: {e}")
         raise HTTPException(status_code=500, detail="Error occurred while saving the file")
 
+@router.get("/download-corrected-txt/", tags=["etap2"])
+async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
+    try:
+        file_record = db.query(File_Model).filter(File_Model.FI_ID == fileId).first()
+        if not file_record:
+            raise HTTPException(status_code=404, detail="File not found")
+
+        filename = f"{file_record.Name}_corrected.txt" if file_record.Name else f"file_{fileId}_corrected.txt"
+        file_path = os.path.join(os.getcwd(), filename)
+
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(file_record.Corretted_Content)
+
+        return {
+            "message": "Corrected text file saved successfully",
+            "file_path": file_path
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/save-keywords", tags=["crud_etap3"], response_model=DetailedResponse)
 async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(get_db)) -> DetailedResponse:

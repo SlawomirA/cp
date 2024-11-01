@@ -1,4 +1,8 @@
+import io
+import re
 from typing import List
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from keybert import KeyBERT
 from pdf2image import convert_from_path
@@ -8,6 +12,7 @@ import requests
 import os
 
 from pytesseract import pytesseract
+from fastapi.responses import StreamingResponse
 from starlette.responses import PlainTextResponse
 
 import spacy
@@ -27,22 +32,56 @@ class PDFUrlResponse(BaseModel):
 
 
 @router.get("/download-pdf/", tags=["etap1"])
-async def download_pdf(url: str, filename: str):
+async def download_pdf(url: str):
+    try:
+        # Make a GET request to download the PDF
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
+
+        # Extract filename from the URL
+        parsed_url = urlparse(url)
+        filename = os.path.basename(parsed_url.path)
+
+        file_path = os.path.join(os.getcwd(), filename)
+
+        # Write the content to a file
+        with open(file_path, 'wb') as f:
+            f.write(response.content)
+
+
+        return {
+            "message": "PDF downloaded successfully",
+            "file_path": file_path
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/download-pdf-return/", tags=["etap1"])
+async def download_pdf(url: str):
     try:
         response = requests.get(url)
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
 
-        file_path = os.path.join(os.getcwd(), filename)
+        parsed_url = urlparse(url)
+        filename = os.path.basename(parsed_url.path)
 
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
+        pdf_buffer = io.BytesIO(response.content)
 
-
-        return {"message": "PDF downloaded successfully", "file_path": file_path}
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.get("/scrape-pdfs/", tags=["etap1"])
@@ -125,13 +164,13 @@ async def ask_for_advice(input_text: str, question: str):
 
 
 @router.post("/extract-keywords", tags=['etap3'])
-async def extract_keywords(request: str, number_of_cases: int):
+async def extract_keywords(request: str):
     try:
         keywords = model.extract_keywords(
             request,
             keyphrase_ngram_range=(1, 2),
             stop_words=None,
-            top_n=number_of_cases
+            top_n=7
         )
 
         return {
