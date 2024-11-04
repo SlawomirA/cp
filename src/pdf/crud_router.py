@@ -23,13 +23,22 @@ from src.response_models import FileModelResponse, LLMMessageResponse
 router = APIRouter()
 
 
+class SaveFileUpload(BaseModel):
+    name: str
+    url: str
+    content: Optional[str] = None
+
+
 @router.post("/save-file", tags=["crud_etap1"], response_model=DetailedResponse)
-async def save_file(name: str, url: str, content: Optional[str] = None, db: Session = Depends(get_db)) -> DetailedResponse:
+# async def save_file(name: str, url: str, content: Optional[str] = None, db: Session = Depends(get_db)) -> DetailedResponse:
+async def save_file(file_upload: SaveFileUpload, db: Session = Depends(get_db)) -> DetailedResponse:
+    print("name", file_upload.name, "\nurl", file_upload.url, "\ncontent", file_upload.content)
+
     try:
         new_file = File_Model(
-            Name=name,
-            Url=url,
-            Content=content
+            Name=file_upload.name,
+            Url=file_upload.url,
+            Content=file_upload.content
         )
         db.add(new_file)
         db.commit()
@@ -72,16 +81,21 @@ async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class SaveKeywordsUpload(BaseModel):
+    fileId: int
+    keywords: List[str]
+
 @router.post("/save-keywords", tags=["crud_etap3"], response_model=DetailedResponse)
-async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(get_db)) -> DetailedResponse:
-    file_exists = db.execute(select(File_Model).filter_by(FI_ID=fileId)).scalars().first()
+# async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(get_db)) -> DetailedResponse:
+async def save_keywords(saveKeywordsUpload: SaveKeywordsUpload, db: Session = Depends(get_db)) -> DetailedResponse:
+    file_exists = db.execute(select(File_Model).filter_by(FI_ID=saveKeywordsUpload.fileId)).scalars().first()
     if not file_exists:
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
         new_keywords: List[File_Keyword]
-        for keyword in keywords:
-            new_keyword = File_Keyword(FI_ID=fileId, Keyword=keyword)
+        for keyword in saveKeywordsUpload.keywords:
+            new_keyword = File_Keyword(FI_ID=saveKeywordsUpload.fileId, Keyword=keyword)
             new_keywords.append(new_keyword)
             db.add(new_keyword)
         db.commit()
@@ -91,15 +105,22 @@ async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(
         print(f"Error occurred: {e}")
         return DetailedResponse(code=500, message="Error", error=str(e))
 
+
+class SaveChatUpload(BaseModel):
+    prompt: str
+    answer: str
+    fileId: Optional[int] = None
+
 @router.post("/save-chat-history", tags=["crud_etap3"], response_model=DetailedResponse)
-async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = None,  db: Session = Depends(get_db)) -> DetailedResponse:
-    if file_id is not None:
-        file_exists = db.execute(select(File_Model).filter_by(FI_ID=file_id)).scalars().first()
+# async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = None,  db: Session = Depends(get_db)) -> DetailedResponse:
+async def save_chat_history(saveChatUpload: SaveChatUpload,  db: Session = Depends(get_db)) -> DetailedResponse:
+    if saveChatUpload.file_id is not None:
+        file_exists = db.execute(select(File_Model).filter_by(FI_ID=saveChatUpload.file_id)).scalars().first()
         if not file_exists:
             raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        llm_message = LLM_Message(Prompt=prompt, Answer=answer, FI_ID=file_id)
+        llm_message = LLM_Message(Prompt=saveChatUpload.prompt, Answer=saveChatUpload.answer, FI_ID=saveChatUpload.file_id)
         db.add(llm_message)
         db.commit()
         return DetailedResponse(code=201, message="Correctly saved", data=LLMMessageResponse.from_orm(llm_message))
@@ -108,14 +129,21 @@ async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = N
         print(f"Error occurred: {e}")
         return DetailedResponse(code=500, message="Error", error=str(e))
 
+
+class SaveCorrectedTextUpload(BaseModel):
+    fileId: int
+    corrected_text: str
+
+
 @router.patch("/save-corrected-text", tags=["crud_etap2"], response_model=DetailedResponse)
-async def save_corrected_text(fileId: int, corrected_text: str, db: Session = Depends(get_db)) -> DetailedResponse:
-    file_instance  =  db.execute(select(File_Model).filter_by(FI_ID=fileId)).scalars().first()
+# async def save_corrected_text(fileId: int, corrected_text: str, db: Session = Depends(get_db)) -> DetailedResponse:
+async def save_corrected_text(saveCorrectedTextUpload: SaveCorrectedTextUpload, db: Session = Depends(get_db)) -> DetailedResponse:
+    file_instance  =  db.execute(select(File_Model).filter_by(FI_ID=saveCorrectedTextUpload.fileId)).scalars().first()
     if not file_instance :
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        file_instance.Corretted_Content = corrected_text
+        file_instance.Corretted_Content = saveCorrectedTextUpload.corrected_text
         db.commit()
 
         return DetailedResponse(code=201, message="Correctly updated", data=FileModelResponse.from_orm(file_instance))
