@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
+from fastapi.responses import FileResponse
 from keybert import KeyBERT
 from pdf2image import convert_from_path
 from pydantic import BaseModel, create_model
@@ -30,9 +31,7 @@ class SaveFileUpload(BaseModel):
 
 
 @router.post("/save-file", tags=["crud_etap1"], response_model=DetailedResponse)
-# async def save_file(name: str, url: str, content: Optional[str] = None, db: Session = Depends(get_db)) -> DetailedResponse:
 async def save_file(file_upload: SaveFileUpload, db: Session = Depends(get_db)) -> DetailedResponse:
-    print("name", file_upload.name, "\nurl", file_upload.url, "\ncontent", file_upload.content)
 
     try:
         new_file = File_Model(
@@ -62,20 +61,20 @@ async def save_file(file_upload: SaveFileUpload, db: Session = Depends(get_db)) 
 @router.get("/download-corrected-txt/", tags=["etap2"])
 async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
     try:
+        # Retrieve file record from database
         file_record = db.query(File_Model).filter(File_Model.FI_ID == fileId).first()
         if not file_record:
             raise HTTPException(status_code=404, detail="File not found")
 
         filename = f"{file_record.Name}_corrected.txt" if file_record.Name else f"file_{fileId}_corrected.txt"
-        file_path = os.path.join(os.getcwd(), filename)
+        file_path = os.path.join("downloads", filename)
+
+        os.makedirs("downloads", exist_ok=True)
 
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(file_record.Corretted_Content)
 
-        return {
-            "message": "Corrected text file saved successfully",
-            "file_path": file_path
-        }
+        return FileResponse(path=file_path, filename=filename, media_type='text/plain')
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -136,7 +135,6 @@ class SaveCorrectedTextUpload(BaseModel):
 
 
 @router.patch("/save-corrected-text", tags=["crud_etap2"], response_model=DetailedResponse)
-# async def save_corrected_text(fileId: int, corrected_text: str, db: Session = Depends(get_db)) -> DetailedResponse:
 async def save_corrected_text(saveCorrectedTextUpload: SaveCorrectedTextUpload, db: Session = Depends(get_db)) -> DetailedResponse:
     file_instance  =  db.execute(select(File_Model).filter_by(FI_ID=saveCorrectedTextUpload.fileId)).scalars().first()
     if not file_instance :

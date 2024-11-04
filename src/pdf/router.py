@@ -1,10 +1,11 @@
 import base64
 import io
 import re
-from typing import List
+from pathlib import Path
+from typing import List, Optional
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from keybert import KeyBERT
 from pdf2image import convert_from_path
 from pydantic import BaseModel
@@ -23,7 +24,7 @@ from src.engine import Engine
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -35,25 +36,24 @@ class PDFUrlResponse(BaseModel):
 @router.get("/download-pdf/", tags=["etap1"])
 async def download_pdf(url: str):
     try:
-        # Make a GET request to download the PDF
         response = requests.get(url)
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
 
-        # Extract filename from the URL
         parsed_url = urlparse(url)
         filename = os.path.basename(parsed_url.path)
 
-        file_path = os.path.join(os.getcwd(), filename)
+        downloads_path = Path.home() / "Downloads"
+        downloads_path.mkdir(parents=True, exist_ok=True)
 
-        # Write the content to a file
+        file_path = downloads_path / filename
+
         with open(file_path, 'wb') as f:
             f.write(response.content)
 
-
         return {
             "message": "PDF downloaded successfully",
-            "file_path": file_path
+            "file_path": str(file_path)
         }
 
     except Exception as e:
@@ -120,7 +120,6 @@ async def upload_pdf(file: UploadFile = File(...)):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
 
-    # Save the uploaded PDF to a tmp file
     temp_file_path = f"temp_{file.filename}"
     with open(temp_file_path, "wb") as temp_file:
         content = await file.read()
@@ -160,19 +159,42 @@ async def correct_text(correct_text: CorrectTextInput):
 
 
 class AskAdviceInput(BaseModel):
-    input_text: str
     question: str
 
-
 @router.post("/ask-for-advice", tags=['etap3'])
-# async def ask_for_advice(input_text: str, question: str):
-async def ask_for_advice(askadvice_input: AskAdviceInput):
+async def ask_for_advice(
+    askadvice_input: AskAdviceInput = Depends(),
+    input_file: Optional[UploadFile] = File(None)
+):
     try:
         engine = Engine()
-        result = engine.connection(askadvice_input.input_text, askadvice_input.question)
+
+        if input_file:
+            if not input_file.filename.endswith('.pdf'):
+                raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+
+            temp_file_path = f"temp_{input_file.filename}"
+            with open(temp_file_path, "wb") as temp_file:
+                content = await input_file.read()
+                temp_file.write(content)
+
+            try:
+                images = convert_from_path(temp_file_path)
+                extracted_text = ""
+                for image in images:
+                    text = pytesseract.image_to_string(image, lang='pol')
+                    extracted_text += text + "\n"
+
+                input_text = extracted_text.strip()
+            finally:
+                os.remove(temp_file_path)
+        else:
+            input_text = askadvice_input.input_text
+
+        result = engine.connection(input_text, askadvice_input.question)
 
         return {
-            "prompt": engine.create_prompt(askadvice_input.input_text, askadvice_input.question),
+            "prompt": engine.create_prompt(input_text, askadvice_input.question),
             "answer": result
         }
     except Exception as e:
