@@ -134,16 +134,16 @@ class SaveCorrectedTextUpload(BaseModel):
 
 @router.patch("/save-corrected-text", tags=["crud_etap2"], response_model=DetailedResponse)
 async def save_corrected_text(saveCorrectedTextUpload: SaveCorrectedTextUpload, db: Session = Depends(get_db)) -> DetailedResponse:
-    file_instance  =  db.execute(select(File_Model).filter_by(FI_ID=saveCorrectedTextUpload.fileId)).scalars().first()
-    if not file_instance :
+    file_instance = db.execute(select(File_Model).filter_by(FI_ID=saveCorrectedTextUpload.fileId)).scalars().first()
+    if not file_instance:
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
         file_instance.Corretted_Content = saveCorrectedTextUpload.corrected_text
         db.commit()
 
-        return True
+        return DetailedResponse(code=200, message="OK", data=True)
     except SQLAlchemyError as e:
         db.rollback()
         print(f"Error occurred: {e}")
-        return False
+        return DetailedResponse(code=400, message="Error saving", data=False, error=str(e))
