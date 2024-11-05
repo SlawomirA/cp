@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from fastapi.responses import FileResponse
@@ -70,9 +71,11 @@ async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
 
         base_name = file_record.Name.split('.')[0] if file_record.Name else f"file_{fileId}"
         filename = f"{base_name}_corrected.txt"
-        file_path = os.path.join("downloads", filename)
 
-        os.makedirs("downloads", exist_ok=True)
+        downloads_path = Path.home() / "Downloads"
+        downloads_path.mkdir(parents=True, exist_ok=True)
+
+        file_path = downloads_path / filename
 
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(file_record.Corretted_Content)
