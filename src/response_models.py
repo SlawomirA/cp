@@ -21,7 +21,12 @@ class LLMMessageResponse(BaseModel):
         orm_mode = True
         from_attributes = True
 
-
+class KeywordResponse(BaseModel):
+    FI_ID: int
+    Keyword: str
+    class Config:
+        orm_mode = True
+        from_attributes = True
 class FileModelResponse(BaseModel):
     FI_ID: int
     Name: Optional[str]
