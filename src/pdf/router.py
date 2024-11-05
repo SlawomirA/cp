@@ -29,7 +29,7 @@ from src.models import File_Model
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe'
+pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -273,10 +273,18 @@ async def load_pdf_data(url: str, file: UploadFile = File(...), db: Session = De
             db.commit()
             db.refresh(new_file)  # Refresh to get the ID and other defaults
 
+            keywords = model.extract_keywords(
+                new_file.Corretted_Content,
+                keyphrase_ngram_range=(1, 2),
+                stop_words=None,
+                top_n=7
+            )
+
             response_data = {
                 "FI_ID": new_file.FI_ID,
                 "Content": new_file.Content,
-                "Corretted_Content": new_file.Corretted_Content
+                "Corrected_Content": new_file.Corretted_Content,
+                "Keywords": [kw[0] for kw in keywords]
             }
 
             return DetailedResponse(code=201, message="File successfully saved", data=response_data)
