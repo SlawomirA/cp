@@ -20,7 +20,7 @@ from src.database import SessionLocal
 from src.http_models import DetailedResponse
 from src.models import File_Keyword, File_Model, LLM_Message
 from src.request_models import SaveFileUpload, SaveKeywordsUpload, SaveChatUpload
-from src.response_models import FileModelResponse, LLMMessageResponse
+from src.response_models import FileModelResponse, LLMMessageResponse, KeywordResponse
 
 router = APIRouter()
 
