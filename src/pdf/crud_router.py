@@ -64,12 +64,12 @@ async def save_file_to_database(db, file_upload):
 @router.get("/download-corrected-txt/", tags=["etap2"])
 async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
     try:
-        # Retrieve file record from database
         file_record = db.query(File_Model).filter(File_Model.FI_ID == fileId).first()
         if not file_record:
             raise HTTPException(status_code=404, detail="File not found")
 
-        filename = f"{file_record.Name}_corrected.txt" if file_record.Name else f"file_{fileId}_corrected.txt"
+        base_name = file_record.Name.split('.')[0] if file_record.Name else f"file_{fileId}"
+        filename = f"{base_name}_corrected.txt"
         file_path = os.path.join("downloads", filename)
 
         os.makedirs("downloads", exist_ok=True)
