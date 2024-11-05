@@ -83,28 +83,36 @@ async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
 @router.post("/save-keywords", tags=["crud_etap3"], response_model=DetailedResponse)
-# async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(get_db)) -> DetailedResponse:
-async def save_keywords(saveKeywordsUpload: SaveKeywordsUpload, db: Session = Depends(get_db)) -> DetailedResponse:
-    file_exists = db.execute(select(File_Model).filter_by(FI_ID=saveKeywordsUpload.fileId)).scalars().first()
+async def save_keywords(
+        saveKeywordsUpload: SaveKeywordsUpload,
+        db: Session = Depends(get_db)
+) -> DetailedResponse:
+    file_exists = db.execute(
+        select(File_Model).filter_by(FI_ID=saveKeywordsUpload.fileId)
+    ).scalars().first()
     if not file_exists:
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        new_keywords: List[File_Keyword]
+        db.query(File_Keyword).filter_by(FI_ID=saveKeywordsUpload.fileId).delete(synchronize_session='fetch')
+
+        new_keywords = []
         for keyword in saveKeywordsUpload.keywords:
             new_keyword = File_Keyword(FI_ID=saveKeywordsUpload.fileId, Keyword=keyword)
             new_keywords.append(new_keyword)
             db.add(new_keyword)
+
         db.commit()
-        return DetailedResponse(code=201, message="Correctly saved", data=new_keywords)
+
+        serialized_keywords = [KeywordResponse.from_orm(keyword) for keyword in new_keywords]
+
+        return DetailedResponse(code=201, message="Correctly saved", data=serialized_keywords)
+
     except SQLAlchemyError as e:
         db.rollback()
         print(f"Error occurred: {e}")
         return DetailedResponse(code=500, message="Error", error=str(e))
-
 
 
 
