@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from keybert import KeyBERT
 from pdf2image import convert_from_path
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import subprocess
 import requests
@@ -20,7 +21,10 @@ from starlette.responses import PlainTextResponse
 import spacy
 import language_tool_python
 
+from src.database import get_db
 from src.engine import Engine
+from src.http_models import DetailedResponse
+from src.models import File_Model
 
 router = APIRouter()
 
@@ -216,8 +220,62 @@ async def extract_keywords(keywordsText: ExtractKeywordsText):
         )
 
         return {
-            "keywords": [{"keyword": kw[0], "score": kw[1]} for kw in keywords]
+            "keywords": [{"keyword": kw[0]} for kw in keywords]
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error extracting keywords: {str(e)}")
+
+
+@router.post("/load-pdf-data", tags=["etap2"])
+async def load_pdf_data(url: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+
+    temp_file_path = f"temp_{file.filename}"
+    with open(temp_file_path, "wb") as temp_file:
+        content = await file.read()
+        temp_file.write(content)
+
+    try:
+        images = convert_from_path(temp_file_path)  #PDF to images
+
+        print("here1")
+        extracted_text = ""
+        for image in images:
+            text = pytesseract.image_to_string(image, lang='pol')
+            extracted_text += text + "\n"
+        print("here2")
+        corrected_text = str(tool.correct(extracted_text))
+        try:
+
+            print("here3")
+            parsed_url = urlparse(url)
+            filename = os.path.basename(parsed_url.path)
+
+            new_file = File_Model(
+                Name=filename,
+                Url=url,
+                Content=extracted_text,
+                Corretted_Content=corrected_text
+            )
+            print("here4")
+            db.add(new_file)
+            db.commit()
+            db.refresh(new_file)  # Refresh to get the ID and other defaults
+
+            print("here5")
+            response_data = {
+                "FI_ID": new_file.FI_ID,
+                "Content": new_file.Content,
+                "Corretted_Content": new_file.Corretted_Content
+            }
+
+            return DetailedResponse(code=201, message="File successfully saved", data=response_data)
+
+        except Exception as e:
+            db.rollback()
+            print(f"Error occurred while saving file: {e}")
+            raise HTTPException(status_code=500, detail="Error occurred while saving the file")
+    finally:
+        os.remove(temp_file_path)

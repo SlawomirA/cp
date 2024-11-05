@@ -19,37 +19,20 @@ from starlette.responses import PlainTextResponse
 from src.database import SessionLocal
 from src.http_models import DetailedResponse
 from src.models import File_Keyword, File_Model, LLM_Message
+from src.request_models import SaveFileUpload, SaveKeywordsUpload
 from src.response_models import FileModelResponse, LLMMessageResponse
 
 router = APIRouter()
 
 
-class SaveFileUpload(BaseModel):
-    name: str
-    url: str
-    content: Optional[str] = None
+
 
 
 @router.post("/save-file", tags=["crud_etap1"], response_model=DetailedResponse)
 async def save_file(file_upload: SaveFileUpload, db: Session = Depends(get_db)) -> DetailedResponse:
 
     try:
-        new_file = File_Model(
-            Name=file_upload.name,
-            Url=file_upload.url,
-            Content=file_upload.content
-        )
-        db.add(new_file)
-        db.commit()
-        db.refresh(new_file)  #Refresh to get the ID and other defaults
-
-        response_data = {
-            "FI_ID": new_file.FI_ID,
-            "Name": new_file.Name,
-            "Url": new_file.Url,
-            "Content": new_file.Content,
-            "Corretted_Content": new_file.Corretted_Content,  #None initially
-        }
+        response_data = await save_file_to_database(db, file_upload)
 
         return DetailedResponse(code=201, message="File successfully saved", data=response_data)
 
@@ -57,6 +40,26 @@ async def save_file(file_upload: SaveFileUpload, db: Session = Depends(get_db)) 
         db.rollback()
         print(f"Error occurred while saving file: {e}")
         raise HTTPException(status_code=500, detail="Error occurred while saving the file")
+
+
+async def save_file_to_database(db, file_upload):
+    new_file = File_Model(
+        Name=file_upload.name,
+        Url=file_upload.url,
+        Content=file_upload.content
+    )
+    db.add(new_file)
+    db.commit()
+    db.refresh(new_file)  # Refresh to get the ID and other defaults
+    response_data = {
+        "FI_ID": new_file.FI_ID,
+        "Name": new_file.Name,
+        "Url": new_file.Url,
+        "Content": new_file.Content,
+        "Corretted_Content": new_file.Corretted_Content,  # None initially
+    }
+    return response_data
+
 
 @router.get("/download-corrected-txt/", tags=["etap2"])
 async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
@@ -80,9 +83,7 @@ async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class SaveKeywordsUpload(BaseModel):
-    fileId: int
-    keywords: List[str]
+
 
 @router.post("/save-keywords", tags=["crud_etap3"], response_model=DetailedResponse)
 # async def save_keywords(fileId: int, keywords: List[str], db: Session = Depends(get_db)) -> DetailedResponse:
@@ -144,8 +145,8 @@ async def save_corrected_text(saveCorrectedTextUpload: SaveCorrectedTextUpload, 
         file_instance.Corretted_Content = saveCorrectedTextUpload.corrected_text
         db.commit()
 
-        return DetailedResponse(code=201, message="Correctly updated", data=FileModelResponse.from_orm(file_instance))
+        return True
     except SQLAlchemyError as e:
         db.rollback()
         print(f"Error occurred: {e}")
-        return DetailedResponse(code=500, message="Error", error=str(e))
+        return False
