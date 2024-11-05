@@ -19,7 +19,7 @@ from starlette.responses import PlainTextResponse
 from src.database import SessionLocal
 from src.http_models import DetailedResponse
 from src.models import File_Keyword, File_Model, LLM_Message
-from src.request_models import SaveFileUpload, SaveKeywordsUpload
+from src.request_models import SaveFileUpload, SaveKeywordsUpload, SaveChatUpload
 from src.response_models import FileModelResponse, LLMMessageResponse
 
 router = APIRouter()
@@ -106,10 +106,7 @@ async def save_keywords(saveKeywordsUpload: SaveKeywordsUpload, db: Session = De
         return DetailedResponse(code=500, message="Error", error=str(e))
 
 
-class SaveChatUpload(BaseModel):
-    prompt: str
-    answer: str
-    fileId: Optional[int] = None
+
 
 @router.post("/save-chat-history", tags=["crud_etap3"], response_model=DetailedResponse)
 # async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = None,  db: Session = Depends(get_db)) -> DetailedResponse:

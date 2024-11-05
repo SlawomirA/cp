@@ -10,6 +10,7 @@ from keybert import KeyBERT
 from pdf2image import convert_from_path
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from sqlalchemy.future import select
 import subprocess
 import requests
 import os
@@ -164,16 +165,20 @@ async def correct_text(correct_text: CorrectTextInput):
 
 class AskAdviceInput(BaseModel):
     question: str
+    fileId: Optional[int] = None
 
 @router.post("/ask-for-advice", tags=['etap3'])
 async def ask_for_advice(
     askadvice_input: AskAdviceInput = Depends(),
-    input_file: Optional[UploadFile] = File(None)
+    input_file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
 ):
     try:
         engine = Engine()
-
-        if input_file:
+        if askadvice_input.fileId:
+            file = db.execute(select(File_Model).filter_by(FI_ID=askadvice_input.fileId)).scalars().first()
+            input_text = file.Content
+        elif input_file:
             if not input_file.filename.endswith('.pdf'):
                 raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
 
@@ -190,6 +195,14 @@ async def ask_for_advice(
                     extracted_text += text + "\n"
 
                 input_text = extracted_text.strip()
+
+                new_file = File_Model(
+                    Name=input_file.filename,
+                    Url='Missing url',
+                    Content=input_text
+                )
+                db.add(new_file)
+                db.commit()
             finally:
                 os.remove(temp_file_path)
         else:
@@ -240,16 +253,13 @@ async def load_pdf_data(url: str, file: UploadFile = File(...), db: Session = De
     try:
         images = convert_from_path(temp_file_path)  #PDF to images
 
-        print("here1")
         extracted_text = ""
         for image in images:
             text = pytesseract.image_to_string(image, lang='pol')
             extracted_text += text + "\n"
-        print("here2")
         corrected_text = str(tool.correct(extracted_text))
         try:
 
-            print("here3")
             parsed_url = urlparse(url)
             filename = os.path.basename(parsed_url.path)
 
@@ -259,12 +269,10 @@ async def load_pdf_data(url: str, file: UploadFile = File(...), db: Session = De
                 Content=extracted_text,
                 Corretted_Content=corrected_text
             )
-            print("here4")
             db.add(new_file)
             db.commit()
             db.refresh(new_file)  # Refresh to get the ID and other defaults
 
-            print("here5")
             response_data = {
                 "FI_ID": new_file.FI_ID,
                 "Content": new_file.Content,
