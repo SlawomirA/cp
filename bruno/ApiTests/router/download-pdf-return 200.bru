@@ -1,0 +1,20 @@
+meta {
+  name: download-pdf-return 200
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{apigw}}/download-pdf-return/?url={{pdf_link}}
+  body: none
+  auth: none
+}
+
+params:query {
+  url: {{pdf_link}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.pdf: isDefined
+}

@@ -1,0 +1,19 @@
+meta {
+  name: download-pdf 500
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{apigw}}/download-pdf/?url=http:wrong
+  body: none
+  auth: none
+}
+
+params:query {
+  url: http:wrong
+}
+
+assert {
+  res.status: eq 500
+}

@@ -1,0 +1,25 @@
+meta {
+  name: download-pdf 200
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apigw}}/download-pdf/?url={{pdf_link}}
+  body: none
+  auth: none
+}
+
+params:query {
+  url: {{pdf_link}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.message: eq PDF downloaded successfully
+  res.body.file_path: isDefined
+}
+
+script:post-response {
+  bru.setEnvVar("downloaded_pdf", res.body.file_path)
+}

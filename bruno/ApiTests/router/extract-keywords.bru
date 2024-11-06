@@ -1,0 +1,23 @@
+meta {
+  name: extract-keywords
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{apigw}}/extract-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "request": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus pretium sem enim, vel faucibus turpis tristique vitae. Sed non ipsum auctor, finibus magna sagittis, vestibulum eros. Integer ut dictum ipsum, vel euismod est. Aliquam porttitor lorem in mi imperdiet auctor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Pellentesque euismod lobortis lectus. Vestibulum at interdum neque. In imperdiet tortor at pulvinar ultricies. Integer in lorem volutpat, gravida nisi semper, interdum diam. Mauris faucibus metus sit amet arcu accumsan ultricies. Nulla euismod massa nec sapien elementum, at finibus leo mollis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus tellus ligula, tincidunt ac sagittis sit amet, commodo vitae neque. Suspendisse rhoncus, tortor nec iaculis lacinia, ex augue auctor mi, id condimentum nisi magna nec odio. Etiam pretium gravida accumsan. Duis non tincidunt odio. Quisque ullamcorper erat id aliquam dapibus. Vestibulum fermentum elit purus, id pharetra nulla viverra id. Morbi volutpat mattis metus at tempor. Curabitur interdum cursus efficitur. Nam vitae scelerisque turpis. Praesent tincidunt nunc sed erat malesuada ullamcorper. Suspendisse eu nisl nec sem efficitur elementum dapibus ut magna. Nam sagittis efficitur placerat. Donec felis neque, ullamcorper vitae massa sit amet, convallis scelerisque ipsum. Phasellus facilisis nisi eget purus tempus pulvinar. Curabitur ut lobortis mauris. Vivamus nec pharetra purus, at pulvinar risus. Pellentesque at convallis arcu. Praesent tristique fringilla eros sit amet egestas. Ut imperdiet velit vel tellus elementum, in condimentum ex lobortis. Nulla luctus dolor consequat tortor egestas elementum. Ut nec urna at felis gravida posuere ut non sapien. Phasellus laoreet blandit erat, vel pretium eros egestas vel. Maecenas eleifend consequat lorem tempus vestibulum. Morbi aliquet nunc non lobortis auctor. Vestibulum vel lacinia leo. Aenean eleifend, quam gravida dictum suscipit, sapien metus condimentum dolor, sit amet cursus turpis velit vehicula arcu. Nunc mattis fermentum dui id faucibus. Fusce blandit nisl vitae augue rhoncus ornare. Morbi lectus metus, iaculis vitae dignissim eu, ornare at nibh. Interdum et malesuada fames ac ante ipsum primis in faucibus. Duis ultrices placerat ipsum, sed maximus augue mattis eleifend. Nulla at sem faucibus, tristique tortor a, convallis felis. Quisque quis ligula diam. Donec ultrices turpis sed luctus vehicula. In hac habitasse platea dictumst. Phasellus nec aliquam odio. Pellentesque ullamcorper urna vel turpis rutrum, vel tristique urna luctus. Nullam magna risus, suscipit a accumsan eget, maximus rutrum justo. Maecenas sodales sodales justo, in lobortis magna egestas a. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nulla eleifend purus sed porttitor placerat. Ut tempor nibh non lorem auctor tincidunt elementum at tortor. Nunc sollicitudin ullamcorper lectus, vitae ultricies tortor rutrum et. Phasellus imperdiet mi nec quam luctus, gravida vehicula felis blandit. Mauris sit amet efficitur justo. Nunc ex est, feugiat id lacus ac, blandit eleifend ipsum. Nullam semper ex condimentum, interdum tellus non, finibus elit. Nam tristique massa lectus."
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.keywords.length: gt 0
+  res.body.keywords[0].keyword: isDefined Tekst testowy z błędami, Weź waść pchłę w dłoń i dój z niej miąższ
+}

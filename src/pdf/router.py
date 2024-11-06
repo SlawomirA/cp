@@ -62,6 +62,8 @@ async def download_pdf(url: str):
             "file_path": str(file_path)
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -73,20 +75,11 @@ async def download_pdf(url: str):
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
 
-        parsed_url = urlparse(url)
-        filename = os.path.basename(parsed_url.path)
-
-        # pdf_buffer = io.BytesIO(response.content)
         pdf_buffer = base64.b64encode(response.content).decode('utf-8')
         return {"pdf": pdf_buffer}
-        # return StreamingResponse(
-        #     pdf_buffer,
-        #     media_type="application/pdf",
-        #     headers={
-        #         "Content-Disposition": f"attachment; filename={filename}"
-        #     }
-        # )
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -94,10 +87,13 @@ async def download_pdf(url: str):
 @router.get("/scrape-pdfs/", tags=["etap1"])
 async def scrape_pdfs(start_url: str):
     print("Start URL:", start_url)
+    if not start_url.startswith(('http://', 'https://')):
+        raise HTTPException(status_code=400, detail="Invalid URL: Missing 'http://' or 'https://' scheme.")
+
     project_dir = os.path.join(os.getcwd(), 'src', 'pdf_scraper')
 
     process = subprocess.Popen(
-        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_url={start_url}'],
+        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_urls={start_url}'],
         cwd=project_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -141,6 +137,8 @@ async def upload_pdf(file: UploadFile = File(...)):
             extracted_text += text + "\n"
         print(extracted_text)
         return extracted_text.strip()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         os.remove(temp_file_path)
 
