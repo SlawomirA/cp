@@ -93,7 +93,7 @@ async def scrape_pdfs(start_url: str):
     project_dir = os.path.join(os.getcwd(), 'src', 'pdf_scraper')
 
     process = subprocess.Popen(
-        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_url={start_url}'],
+        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_urls={start_url}'],
         cwd=project_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
