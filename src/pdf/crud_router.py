@@ -49,7 +49,6 @@ async def save_file_to_database(db, file_upload):
         Url=file_upload.url,
         Content=file_upload.content
     )
-    os.path.getsize()
     try:
         db.add(new_file)
         db.commit()
@@ -66,6 +65,27 @@ async def save_file_to_database(db, file_upload):
         db.rollback()
         return e
 
+@router.get("/file-content/")
+async def file_content(fileId: int, db: Session = Depends(get_db)):
+    try:
+        file_record = db.query(File_Model).filter(File_Model.FI_ID == fileId).first()
+        if not file_record:
+            raise HTTPException(status_code=404, detail="File not found")
+
+        return {"content": file_record.Content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/file-corrected-content/")
+async def file_corrected_content(fileId: int, db: Session = Depends(get_db)):
+    try:
+        file_record = db.query(File_Model).filter(File_Model.FI_ID == fileId).first()
+        if not file_record:
+            raise HTTPException(status_code=404, detail="File not found")
+
+        return {"content": file_record.Corretted_Content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/download-corrected-txt/", tags=["etap2"])
 async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
@@ -83,10 +103,11 @@ async def download_corrected_txt(fileId: int, db: Session = Depends(get_db)):
         file_path = downloads_path / filename
 
         with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(file_record.Corretted_Content)
+            f.write(file_record.Corretted_Content or "NULL")
 
         return FileResponse(path=file_path, filename=filename, media_type='text/plain')
-
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -127,13 +148,13 @@ async def save_keywords(
 @router.post("/save-chat-history", tags=["crud_etap3"], response_model=DetailedResponse)
 # async def save_chat_history(prompt: str, answer: str, file_id: Optional[int] = None,  db: Session = Depends(get_db)) -> DetailedResponse:
 async def save_chat_history(saveChatUpload: SaveChatUpload,  db: Session = Depends(get_db)) -> DetailedResponse:
-    if saveChatUpload.file_id is not None:
-        file_exists = db.execute(select(File_Model).filter_by(FI_ID=saveChatUpload.file_id)).scalars().first()
+    if saveChatUpload.fileId is not None:
+        file_exists = db.execute(select(File_Model).filter_by(FI_ID=saveChatUpload.fileId)).scalars().first()
         if not file_exists:
             raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        llm_message = LLM_Message(Prompt=saveChatUpload.prompt, Answer=saveChatUpload.answer, FI_ID=saveChatUpload.file_id)
+        llm_message = LLM_Message(Prompt=saveChatUpload.prompt, Answer=saveChatUpload.answer, FI_ID=saveChatUpload.fileId)
         db.add(llm_message)
         db.commit()
         return DetailedResponse(code=201, message="Correctly saved", data=LLMMessageResponse.from_orm(llm_message))

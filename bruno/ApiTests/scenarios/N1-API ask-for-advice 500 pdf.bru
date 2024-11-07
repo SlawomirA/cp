@@ -1,0 +1,24 @@
+meta {
+  name: N1-API ask-for-advice 500 pdf
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{apigw}}/ask-for-advice?question=o czym w skrócie mówi ta ustawa?
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  question: o czym w skrócie mówi ta ustawa?
+}
+
+body:multipart-form {
+  input_file: @file(..\files\definatelyNotPdf.pdf)
+}
+
+assert {
+  res.status: eq 500
+  res.body.detail: contains May not be a PDF file
+}
