@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import re
 from pathlib import Path
 from typing import List, Optional
@@ -29,7 +30,7 @@ from src.models import File_Model
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
+pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe' # r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -90,10 +91,9 @@ async def download_pdf(url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
 @router.get("/scrape-pdfs/", tags=["etap1"])
 async def scrape_pdfs(start_url: str):
-    print("start url", start_url)
+    print("Start URL:", start_url)
     project_dir = os.path.join(os.getcwd(), 'src', 'pdf_scraper')
 
     process = subprocess.Popen(
@@ -109,12 +109,11 @@ async def scrape_pdfs(start_url: str):
         raise HTTPException(status_code=500, detail=stderr.decode())
 
     pdf_links_path = os.path.join(project_dir, 'pdf_links.json')
-    print(pdf_links_path)
     if os.path.exists(pdf_links_path):
         with open(pdf_links_path, 'r') as f:
             pdf_links = f.read()
-            print(pdf_links)
-        return {"pdf_links": pdf_links}
+            print("PDF Links:", pdf_links)
+        return {"pdf_links": json.loads(pdf_links)}
 
     return {"message": "Scraping completed but no PDF links found."}
 

@@ -1,20 +1,35 @@
+import os
+
 import scrapy
 import json
+from scrapy.http import Request
+
 
 class PDFSpider(scrapy.Spider):
     name = "pdf_spider"
-    start_urls = ['https://dziennikustaw.gov.pl/DU/rok/2024']
+
+    custom_settings = {
+        'FEEDS': {
+            'pdf_links.json': {
+                'format': 'json',
+                'encoding': 'utf8',
+                'overwrite': True
+            }
+        }
+    }
+
+    def __init__(self, start_url=None, *args, **kwargs):
+        super(PDFSpider, self).__init__(*args, **kwargs)
+        self.start_urls = [start_url] if start_url else []
 
     def parse(self, response):
         pdf_links = []
-        # Extract all PDF links from the page (assuming they have .pdf in the href attribute)
         for link in response.css('a::attr(href)').getall():
-            if link.endswith('.pdf'):
-                pdf_links.append(response.urljoin(link))
+            if link.lower().endswith('.pdf'):
+                full_link = response.urljoin(link)
+                pdf_links.append(full_link)
+                self.log(f"Found PDF link: {full_link}")
 
-        # Save the PDF links to a JSON file if any are found
         if pdf_links:
-            with open('pdf_links.json', 'w') as f:
-                json.dump(pdf_links, f)
-
-        self.log(f'Scraped {len(pdf_links)} PDF links.')
+            for pdf_link in pdf_links:
+                yield {'pdf_link': pdf_link}

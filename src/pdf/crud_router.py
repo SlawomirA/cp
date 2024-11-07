@@ -49,17 +49,22 @@ async def save_file_to_database(db, file_upload):
         Url=file_upload.url,
         Content=file_upload.content
     )
-    db.add(new_file)
-    db.commit()
-    db.refresh(new_file)  # Refresh to get the ID and other defaults
-    response_data = {
-        "FI_ID": new_file.FI_ID,
-        "Name": new_file.Name,
-        "Url": new_file.Url,
-        "Content": new_file.Content,
-        "Corretted_Content": new_file.Corretted_Content,  # None initially
-    }
-    return response_data
+    os.path.getsize()
+    try:
+        db.add(new_file)
+        db.commit()
+        db.refresh(new_file)  # Refresh to get the ID and other defaults
+        response_data = {
+            "FI_ID": new_file.FI_ID,
+            "Name": new_file.Name,
+            "Url": new_file.Url,
+            "Content": new_file.Content,
+            "Corretted_Content": new_file.Corretted_Content,  # None initially
+        }
+        return response_data
+    except Exception as e:
+        db.rollback()
+        return e
 
 
 @router.get("/download-corrected-txt/", tags=["etap2"])
