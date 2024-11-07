@@ -207,11 +207,14 @@ async def ask_for_advice(
         else:
             input_text = askadvice_input.input_text
 
-        result = engine.connection(input_text, askadvice_input.question)
+        raw_result = engine.connection(input_text, askadvice_input.question)
+
+        answer_data = json.loads(raw_result)
+        answer_text = answer_data["results"][0]["text"].strip() if answer_data.get("results") else "No answer found."
 
         return {
             "prompt": engine.create_prompt(input_text, askadvice_input.question),
-            "answer": result
+            "answer": answer_text
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the text: {str(e)}")
