@@ -109,11 +109,14 @@ async def scrape_pdfs(start_url: str):
         raise HTTPException(status_code=500, detail=stderr.decode())
 
     pdf_links_path = os.path.join(project_dir, 'pdf_links.json')
+
     if os.path.exists(pdf_links_path):
         with open(pdf_links_path, 'r') as f:
-            pdf_links = f.read()
-            print("PDF Links:", pdf_links)
-        return {"pdf_links": json.loads(pdf_links)}
+            pdf_links_data = json.load(f)
+
+        pdf_links = [item["pdf_link"] for item in pdf_links_data if "pdf_link" in item]
+
+        return {"pdf_links": pdf_links}
 
     return {"message": "Scraping completed but no PDF links found."}
 
