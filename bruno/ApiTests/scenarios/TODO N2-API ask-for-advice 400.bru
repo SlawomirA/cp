@@ -1,0 +1,24 @@
+meta {
+  name: TODO N2-API ask-for-advice 400
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{apigw}}/ask-for-advice?question=incorrect querry
+  body: none
+  auth: none
+}
+
+params:query {
+  question: incorrect querry
+}
+
+body:multipart-form {
+  adsads: adssad
+}
+
+assert {
+  res.status: eq 500
+  res.body.detail: startsWith Error processing the text
+}

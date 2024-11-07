@@ -1,0 +1,24 @@
+meta {
+  name: N1-API ask-for-advice 400 txt
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{apigw}}/ask-for-advice?question=o czym w skrócie mówi ta ustawa?
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  question: o czym w skrócie mówi ta ustawa?
+}
+
+body:multipart-form {
+  input_file: @file(..\files\notPdf.txt)
+}
+
+assert {
+  res.status: eq 400
+  res.body.detail: eq Only PDF files are allowed.
+}

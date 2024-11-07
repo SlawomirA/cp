@@ -1,0 +1,24 @@
+meta {
+  name: P4-API file-content 200
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{apigw}}/file-content/?fileId={{fileID}}
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  fileId: {{fileID}}
+}
+
+body:multipart-form {
+  file: @file(..\files\index.pdf)
+}
+
+assert {
+  res.status: eq 200
+  res.body.content: eq no_content
+}

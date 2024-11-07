@@ -1,7 +1,7 @@
 meta {
   name: download-pdf 200
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
@@ -18,8 +18,4 @@ assert {
   res.status: eq 200
   res.body.message: eq PDF downloaded successfully
   res.body.file_path: isDefined
-}
-
-script:post-response {
-  bru.setEnvVar("downloaded_pdf", res.body.file_path)
 }

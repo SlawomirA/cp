@@ -30,7 +30,7 @@ from src.models import File_Model
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe' # r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
+pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -93,7 +93,7 @@ async def scrape_pdfs(start_url: str):
     project_dir = os.path.join(os.getcwd(), 'src', 'pdf_scraper')
 
     process = subprocess.Popen(
-        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_urls={start_url}'],
+        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_url={start_url}'],
         cwd=project_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -109,9 +109,7 @@ async def scrape_pdfs(start_url: str):
     if os.path.exists(pdf_links_path):
         with open(pdf_links_path, 'r') as f:
             pdf_links_data = json.load(f)
-
         pdf_links = [item["pdf_link"] for item in pdf_links_data if "pdf_link" in item]
-
         return {"pdf_links": pdf_links}
 
     return {"message": "Scraping completed but no PDF links found."}
@@ -195,7 +193,6 @@ async def ask_for_advice(
                     extracted_text += text + "\n"
 
                 input_text = extracted_text.strip()
-
                 new_file = File_Model(
                     Name=input_file.filename,
                     Url='Missing url',
@@ -207,7 +204,6 @@ async def ask_for_advice(
                 os.remove(temp_file_path)
         else:
             input_text = askadvice_input.input_text
-
         raw_result = engine.connection(input_text, askadvice_input.question)
 
         answer_data = json.loads(raw_result)
@@ -217,6 +213,8 @@ async def ask_for_advice(
             "prompt": engine.create_prompt(input_text, askadvice_input.question),
             "answer": answer_text
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the text: {str(e)}")
 

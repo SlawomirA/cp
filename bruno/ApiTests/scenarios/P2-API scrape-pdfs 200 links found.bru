@@ -1,0 +1,20 @@
+meta {
+  name: P2-API scrape-pdfs 200 links found
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{apigw}}/scrape-pdfs/?start_url={{dziennik_ustaw}}
+  body: none
+  auth: none
+}
+
+params:query {
+  start_url: {{dziennik_ustaw}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.pdf_links.length: gt 0
+}

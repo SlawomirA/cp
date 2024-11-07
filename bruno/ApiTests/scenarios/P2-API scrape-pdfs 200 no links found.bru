@@ -1,0 +1,19 @@
+meta {
+  name: P2-API scrape-pdfs 200 no links found
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{apigw}}/download-pdf-return/?url=https://stackoverflow.com
+  body: none
+  auth: none
+}
+
+params:query {
+  url: https://stackoverflow.com
+}
+
+assert {
+  res.status: eq 500
+}

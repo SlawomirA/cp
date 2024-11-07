@@ -1,0 +1,20 @@
+meta {
+  name: download-corrected-txt 200
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{apigw}}/download-corrected-txt/?fileId={{fileID}}
+  body: none
+  auth: none
+}
+
+params:query {
+  fileId: {{fileID}}
+}
+
+assert {
+  res.status: eq 200
+  res.body: eq NULL
+}

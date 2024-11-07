@@ -1,0 +1,29 @@
+meta {
+  name: save-keywords 200
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{apigw}}/save-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileId": {{fileID}},
+    "keywords": {{keywords}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.message: eq Correctly saved
+  res.body.data.length: eq {{keywords_len}}
+  res.body.data[0].FI_ID: eq {{fileID}}
+  res.body.data[0].Keyword: eq {{keyword_1}}
+  res.body.data[1].FI_ID: eq {{fileID}}
+  res.body.data[1].Keyword: eq {{keyword_2}}
+  res.body.error: eq null
+}
