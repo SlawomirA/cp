@@ -30,7 +30,7 @@ from src.models import File_Model
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' # r'D:\Programowanie\TesseractOCR\tesseract.exe'
+pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe' #r'C:\Program Files\Tesseract-OCR\tesseract.exe' #
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -93,7 +93,7 @@ async def scrape_pdfs(start_url: str):
     project_dir = os.path.join(os.getcwd(), 'src', 'pdf_scraper')
 
     process = subprocess.Popen(
-        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_urls={start_url}'],
+        ['scrapy', 'crawl', 'pdf_spider', '-a', f'start_url={start_url}'],
         cwd=project_dir,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
