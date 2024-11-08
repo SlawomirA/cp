@@ -1,7 +1,7 @@
 meta {
-  name: P3-API ocr-pdf 500
+  name: P3-API ocr-pdf 200
   type: http
-  seq: 8
+  seq: 5
 }
 
 post {
@@ -11,9 +11,10 @@ post {
 }
 
 body:multipart-form {
-  file: @file(..\files\definatelyNotPdf.pdf)
+  file: @file(..\files\index.pdf)
 }
 
 assert {
-  res.status: eq 500
+  res.status: eq 200
+  res.body.length: gt 0
 }
