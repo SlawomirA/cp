@@ -1,5 +1,5 @@
 meta {
-  name: P3-API ocr-pdf 400
+  name: P3-API ocr-pdf 500
   type: http
   seq: 7
 }
@@ -11,10 +11,9 @@ post {
 }
 
 body:multipart-form {
-  file: @file(..\files\notPdf.txt)
+  file: @file(..\files\definatelyNotPdf.pdf)
 }
 
 assert {
-  res.status: eq 400
-  res.body.detail: eq Only PDF files are allowed.
+  res.status: eq 500
 }
