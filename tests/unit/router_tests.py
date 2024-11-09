@@ -39,7 +39,7 @@ def test_download_pdf_failure(mock_get):
                           params={"url": "www.example.com/sample.pdf"})
 
     assert response.status_code == 500
-    assert response.json()["detail"] == "500: Failed to download the PDF."
+    assert response.json()["detail"] == "Failed to download the PDF."
 
 
 @patch("src.pdf.router.requests.get")
@@ -59,7 +59,7 @@ def test_download_pdf_return_base64_failure(mock_get):
                           params={"url": "www.example.com/file.pdf"})
 
     assert response.status_code == 500
-    assert response.json()["detail"] == "500: Failed to download the PDF."
+    assert response.json()["detail"] == "Failed to download the PDF."
 
 
 @patch("src.pdf.router.subprocess.Popen")
@@ -68,9 +68,21 @@ def test_scrape_pdfs(mock_popen):
     mock_process.communicate.return_value = (b"stdout", b"")
     mock_popen.return_value = mock_process
     response = client.get("/scrape-pdfs/",
-                          params={"start_url": "www.example.com"})
+                          params={"start_url": "http://www.example.com"})
     assert response.status_code == 200
     assert "message" in response.json() or "pdf_links" in response.json()
+
+
+@patch("src.pdf.router.subprocess.Popen")
+def test_scrape_pdfs_invalid_url(mock_popen):
+    mock_process = MagicMock()
+    mock_process.communicate.return_value = (b"stdout", b"")
+    mock_popen.return_value = mock_process
+    response = client.get("/scrape-pdfs/",
+                          params={"start_url": "www.example.com"})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid URL: Missing 'http://' or 'https://' scheme."
+    assert "detail" in response.json()
 
 
 @patch("src.pdf.router.subprocess.Popen")
@@ -79,7 +91,7 @@ def test_scrape_pdfs_failure(mock_popen):
     mock_process.communicate.return_value = (b"", b"stderr")
     mock_popen.return_value = mock_process
     response = client.get("/scrape-pdfs/",
-                          params={"start_url": "www.example.com"})
+                          params={"start_url": "http://www.example.com"})
     assert response.status_code == 500
     assert "detail" in response.json()
 
