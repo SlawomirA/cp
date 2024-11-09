@@ -1,4 +1,3 @@
-from pathlib import Path
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
