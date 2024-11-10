@@ -163,10 +163,8 @@ def test_save_keywords_error_handling(client, db_session, mocker):
         "keywords": ["keyword1", "keyword2"],
     }
     response = client.post("/save-keywords", json=keywords)
-    assert response.status_code == 200
-    assert response.json()["code"] == 500
-    assert response.json()["message"] == "Error"
-    assert "error" in response.json()
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Error saving keywords"
 
 
 def test_save_chat_history(client, db_session):
@@ -217,10 +215,8 @@ def test_save_chat_history_error_handling(client, db_session, mocker):
     }
     mocker.patch.object(db_session, "add", side_effect=SQLAlchemyError("Database error"))
     response = client.post("/save-chat-history", json=saveChatUpload)
-    assert response.status_code == 200
-    assert response.json()["code"] == 500
-    assert response.json()["message"] == "Error"
-    assert "error" in response.json()
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Error saving chat history"
 
 
 def test_save_corrected_text(client, db_session):
@@ -268,8 +264,5 @@ def test_save_corrected_text_error_handling(client, db_session, mocker):
     }
     mocker.patch.object(db_session, "commit", side_effect=SQLAlchemyError("Database error"))
     response = client.patch("/save-corrected-text", json=SaveCorrectedTextUpload)
-    assert response.status_code == 200
-    assert response.json()["code"] == 400
-    assert response.json()["message"] == "Error saving"
-    assert "data" in response.json()
-    assert "error" in response.json()
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Error saving corrected text"

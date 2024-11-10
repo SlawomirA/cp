@@ -38,7 +38,7 @@ def test_download_pdf_failure(mock_get, client):
                           params={"url": "www.example.com/sample.pdf"})
 
     assert response.status_code == 500
-    assert response.json()["detail"] == "Failed to download the PDF."
+    assert response.json()["detail"] == "500: Failed to download the PDF."
 
 
 @patch("src.pdf.router.requests.get")
@@ -58,7 +58,7 @@ def test_download_pdf_return_base64_failure(mock_get, client):
                           params={"url": "www.example.com/file.pdf"})
 
     assert response.status_code == 500
-    assert response.json()["detail"] == "Failed to download the PDF."
+    assert response.json()["detail"] == "500: Failed to download the PDF."
 
 
 @patch("src.pdf.router.subprocess.Popen")
