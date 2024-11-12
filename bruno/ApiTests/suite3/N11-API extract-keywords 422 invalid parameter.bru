@@ -1,0 +1,26 @@
+meta {
+  name: N11-API extract-keywords 422 invalid parameter
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{apigw}}/extract-keywords
+  body: text
+  auth: none
+}
+
+body:json {
+  invalid body
+}
+
+body:text {
+  invalid body
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq model_attributes_type
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Input should be a valid dictionary or object to extract fields from
+}

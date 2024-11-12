@@ -1,0 +1,20 @@
+meta {
+  name: P5-API file-content 200
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{apigw}}/file-content/?fileId={{fileID}}
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  fileId: {{fileID}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.content: eq no_content
+}

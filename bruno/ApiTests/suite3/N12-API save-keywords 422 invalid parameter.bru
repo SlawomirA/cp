@@ -1,17 +1,19 @@
 meta {
-  name: N3-API ocr-pdf 422
+  name: N12-API save-keywords 422 invalid parameter
   type: http
-  seq: 10
+  seq: 18
 }
 
 post {
-  url: {{apigw}}/ocr-pdf
-  body: text
+  url: {{apigw}}/save-keywords
+  body: json
   auth: none
 }
 
-body:text {
-  invalid body
+body:json {
+  {
+    "fileId": {{fileID}}
+  }
 }
 
 assert {

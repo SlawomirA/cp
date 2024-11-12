@@ -1,0 +1,31 @@
+meta {
+  name: P14-API save-chat-history 201 optional params
+  type: http
+  seq: 25
+}
+
+post {
+  url: {{apigw}}/save-chat-history
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "prompt": "prompt",
+    "answer": "answer",
+    "fileId": {{fileID}}
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.code: eq 201
+  res.body.message: eq Correctly saved
+  res.body.data.LLM_ID: isDefined
+  res.body.data.Prompt: eq prompt
+  res.body.data.Answer: eq  answer
+  res.body.data.FI_ID: eq {{fileID}}
+  res.body.error: eq null
+  res.headers['content-type']: eq application/json
+}

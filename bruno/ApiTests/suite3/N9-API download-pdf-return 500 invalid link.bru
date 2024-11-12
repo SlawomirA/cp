@@ -1,0 +1,20 @@
+meta {
+  name: N9-API download-pdf-return 500 invalid link
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{apigw}}/download-pdf-return/?url=http:wrong
+  body: none
+  auth: none
+}
+
+params:query {
+  url: http:wrong
+}
+
+assert {
+  res.status: eq 500
+  res.headers['content-type']: eq application/json
+}

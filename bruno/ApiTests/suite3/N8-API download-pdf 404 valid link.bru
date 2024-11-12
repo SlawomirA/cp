@@ -1,0 +1,21 @@
+meta {
+  name: N8-API download-pdf 404 valid link
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{apigw}}/download-pdf/?url=https://stackoverflow.com
+  body: none
+  auth: none
+}
+
+params:query {
+  url: https://stackoverflow.com
+}
+
+assert {
+  res.status: eq 400
+  res.body.detail: eq Only PDF download links are allowed.
+  res.headers['content-type']: eq application/json
+}

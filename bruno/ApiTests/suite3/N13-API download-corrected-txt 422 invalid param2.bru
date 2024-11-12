@@ -1,11 +1,11 @@
 meta {
-  name: N2-API scrape-pdfs 422 invalid parameter
+  name: N13-API download-corrected-txt 422 invalid param2
   type: http
-  seq: 6
+  seq: 23
 }
 
 get {
-  url: {{apigw}}/scrape-pdfs/?param=invalid
+  url: {{apigw}}/download-corrected-txt/?param=invalid
   body: none
   auth: none
 }
@@ -17,6 +17,6 @@ params:query {
 assert {
   res.status: eq 422
   res.body.detail[0].type: eq missing
-  res.body.detail[0].msg: eq Field required
   res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Field required
 }
