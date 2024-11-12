@@ -1,0 +1,21 @@
+meta {
+  name: N3-API download-pdf-return 404 valid link
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{apigw}}/download-pdf-return/?url=https://stackoverflow.com
+  body: none
+  auth: none
+}
+
+params:query {
+  url: https://stackoverflow.com
+}
+
+assert {
+  res.status: eq 400
+  res.body.detail: eq Only PDF download links are allowed.
+  res.headers['content-type']: eq application/json
+}

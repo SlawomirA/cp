@@ -1,0 +1,26 @@
+meta {
+  name: P4-API file-corrected-content 422 invalid param2
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{apigw}}/file-corrected-content/?param=invalid
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  param: invalid
+}
+
+body:multipart-form {
+  file: @file(..\files\index.pdf)
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Field required
+}

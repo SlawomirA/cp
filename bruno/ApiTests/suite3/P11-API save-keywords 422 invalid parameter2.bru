@@ -1,0 +1,25 @@
+meta {
+  name: P11-API save-keywords 422 invalid parameter2
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{apigw}}/save-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileId": {{fileID}},
+    "keywords": "list"
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq list_type
+  res.body.detail[0].msg: eq Input should be a valid list
+  res.headers['content-type']: eq application/json
+}

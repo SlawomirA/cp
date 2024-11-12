@@ -1,7 +1,7 @@
 meta {
-  name: N4-API-invalidFileId download-corrected-txt 404
+  name: N4-API download-corrected-txt 404 valid fileid
   type: http
-  seq: 12
+  seq: 21
 }
 
 get {
@@ -17,4 +17,5 @@ params:query {
 assert {
   res.status: eq 404
   res.body.detail: eq File not found
+  res.headers['content-type']: eq application/json
 }

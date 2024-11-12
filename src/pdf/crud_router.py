@@ -73,6 +73,8 @@ async def file_content(fileId: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="File not found")
 
         return {"content": file_record.Content}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -84,6 +86,8 @@ async def file_corrected_content(fileId: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="File not found")
 
         return {"content": file_record.Corretted_Content}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

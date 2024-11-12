@@ -1,0 +1,24 @@
+meta {
+  name: P11-API save-keywords 404 valid parameters
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{apigw}}/save-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileId": 0,
+    "keywords": {{keywords}}
+  }
+}
+
+assert {
+  res.status: eq 404
+  res.headers['content-type']: eq application/json
+  res.body.detail: eq File not found
+}

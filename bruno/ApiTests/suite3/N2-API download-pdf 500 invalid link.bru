@@ -1,5 +1,5 @@
 meta {
-  name: N2-API-failDownloadInvalidLink download-pdf 500
+  name: N2-API download-pdf 500 invalid link
   type: http
   seq: 4
 }
@@ -16,4 +16,6 @@ params:query {
 
 assert {
   res.status: eq 500
+  res.body.detail: eq Invalid URL 'http:wrong': No host supplied
+  res.headers['content-type']: eq application/json
 }

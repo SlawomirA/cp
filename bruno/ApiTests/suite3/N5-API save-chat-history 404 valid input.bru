@@ -1,7 +1,7 @@
 meta {
-  name: N5-API-invalidFileID save-chat-history 404
+  name: N5-API save-chat-history 404 valid input
   type: http
-  seq: 14
+  seq: 26
 }
 
 post {
@@ -21,4 +21,5 @@ body:json {
 assert {
   res.status: eq 404
   res.body.detail: eq File not found
+  res.headers['content-type']: eq application/json
 }

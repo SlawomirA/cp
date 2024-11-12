@@ -1,21 +1,18 @@
 meta {
-  name: P1-API-generateAnswerForQuestion ask-for-advice200
+  name: P1-API ask-for-advice 200 fileId
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{apigw}}/ask-for-advice?question={{prompt}}
+  url: {{apigw}}/ask-for-advice?question={{prompt}}&fileId=3
   body: multipartForm
   auth: none
 }
 
 params:query {
   question: {{prompt}}
-}
-
-body:multipart-form {
-  input_file: @file(..\files\index.pdf)
+  fileId: 3
 }
 
 vars:pre-request {

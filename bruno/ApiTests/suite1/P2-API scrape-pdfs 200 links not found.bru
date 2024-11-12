@@ -1,17 +1,17 @@
 meta {
   name: P2-API scrape-pdfs 200 links not found
   type: http
-  seq: 4
+  seq: 5
 }
 
 get {
-  url: {{apigw}}/scrape-pdfs/?start_url=https://github.com/LostRuins/koboldcpp/releases/tag/v1.77
+  url: {{apigw}}/scrape-pdfs/?start_url=https://stackoverflow.com
   body: none
   auth: none
 }
 
 params:query {
-  start_url: https://github.com/LostRuins/koboldcpp/releases/tag/v1.77
+  start_url: https://stackoverflow.com
 }
 
 assert {

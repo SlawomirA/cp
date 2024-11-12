@@ -1,7 +1,7 @@
 meta {
-  name: P11-API-saveKeyWordsListInDB save-keywords 200
+  name: P11-API save-keywords 200 valid parameters
   type: http
-  seq: 10
+  seq: 16
 }
 
 post {
@@ -26,4 +26,5 @@ assert {
   res.body.data[1].FI_ID: eq {{fileID}}
   res.body.data[1].Keyword: eq {{keyword_2}}
   res.body.error: eq null
+  res.headers['content-type']: eq application/json
 }

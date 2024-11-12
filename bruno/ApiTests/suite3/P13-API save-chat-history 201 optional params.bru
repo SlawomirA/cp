@@ -1,7 +1,7 @@
 meta {
-  name: P13-API-saveHistoryInDB save-chat-history 201
+  name: P13-API save-chat-history 201 optional params
   type: http
-  seq: 13
+  seq: 25
 }
 
 post {
@@ -27,4 +27,5 @@ assert {
   res.body.data.Answer: eq  answer
   res.body.data.FI_ID: eq {{fileID}}
   res.body.error: eq null
+  res.headers['content-type']: eq application/json
 }

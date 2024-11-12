@@ -1,7 +1,7 @@
 meta {
-  name: P9-API-correctPolishSentence correct-text 200
+  name: P9-API correct-text 200 valid input
   type: http
-  seq: 8
+  seq: 10
 }
 
 post {
@@ -20,4 +20,5 @@ assert {
   res.status: eq 200
   res.body.original_text: eq tekt testowy z bledami, Wez wasc pchłę w dlon i doj z niej miazsz
   res.body.corrected_text: eq Tekst testowy z błędami, Weź waść pchłę w dłoń i dój z niej miąższ
+  res.headers['content-type']: eq application/json
 }

@@ -1,0 +1,22 @@
+meta {
+  name: N3-API download-pdf-return 500 invalid param
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{apigw}}/download-pdf-return/?invalid=parameter
+  body: none
+  auth: none
+}
+
+params:query {
+  invalid: parameter
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Field required
+}

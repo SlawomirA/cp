@@ -1,7 +1,7 @@
 meta {
-  name: P10-API-getKeywordsFromText extract-keywords200
+  name: P10-API extract-keywords 200 valid input
   type: http
-  seq: 9
+  seq: 13
 }
 
 post {
@@ -19,7 +19,8 @@ body:json {
 assert {
   res.status: eq 200
   res.body.keywords.length: gt 0
-  res.body.keywords[0].keyword: isDefined Tekst testowy z błędami, Weź waść pchłę w dłoń i dój z niej miąższ
+  res.body.keywords[0].keyword: isDefined
+  res.headers['content-type']: eq application/json
 }
 
 script:post-response {

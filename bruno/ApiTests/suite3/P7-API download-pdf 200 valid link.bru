@@ -1,5 +1,5 @@
 meta {
-  name: P7-API-downloadPdfFileFromLink download-pdf 200
+  name: P7-API download-pdf 200 valid link
   type: http
   seq: 2
 }
@@ -18,4 +18,5 @@ assert {
   res.status: eq 200
   res.body.message: eq PDF downloaded successfully
   res.body.file_path: isDefined
+  res.headers['content-type']: eq application/json
 }

@@ -1,0 +1,29 @@
+meta {
+  name: P1-API ask-for-advice 200 file
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{apigw}}/ask-for-advice?question={{prompt}}
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  question: {{prompt}}
+}
+
+body:multipart-form {
+  input_file: @file(..\files\index.pdf)
+}
+
+vars:pre-request {
+  prompt: o czym w skrócie mówi ta ustawa?
+}
+
+assert {
+  res.status: eq 200
+  res.body.prompt.length: gt 0
+  res.body.answer.length: gt 0
+}

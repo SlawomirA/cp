@@ -1,0 +1,22 @@
+meta {
+  name: N3-API ocr-pdf 422
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{apigw}}/ocr-pdf
+  body: text
+  auth: none
+}
+
+body:text {
+  invalid body
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.body.detail[0].msg: eq Field required
+  res.headers['content-type']: eq application/json
+}

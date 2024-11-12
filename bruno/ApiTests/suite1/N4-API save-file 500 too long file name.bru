@@ -1,7 +1,7 @@
 meta {
-  name: N6-API-tooLongFileToSave save-file 500
+  name: N4-API save-file 500 too long file name
   type: http
-  seq: 15
+  seq: 16
 }
 
 post {
@@ -20,4 +20,8 @@ body:json {
 
 assert {
   res.status: eq 500
+}
+
+script:post-response {
+  setTimeout(function(){}, 500);
 }

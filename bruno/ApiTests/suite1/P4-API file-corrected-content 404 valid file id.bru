@@ -1,0 +1,25 @@
+meta {
+  name: P4-API file-corrected-content 404 valid file id
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{apigw}}/file-corrected-content/?fileId=0
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  fileId: 0
+}
+
+body:multipart-form {
+  file: @file(..\files\index.pdf)
+}
+
+assert {
+  res.status: eq 404
+  res.body.detail: eq File not found
+  res.headers['content-type']: eq application/json
+}

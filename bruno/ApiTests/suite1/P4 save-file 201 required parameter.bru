@@ -1,7 +1,7 @@
 meta {
-  name: P4 prerequisite save-file 201
+  name: P4 save-file 201 required parameter
   type: http
-  seq: 8
+  seq: 12
 }
 
 post {
@@ -13,8 +13,7 @@ post {
 body:json {
   {
     "name": "no_name",
-    "url": "no_link",
-    "content": "no_content"
+    "url": "no_link"
   }
 }
 
@@ -27,7 +26,7 @@ assert {
   res.body.data.FI_ID: isDefined
   res.body.data.Name: eq no_name
   res.body.data.Url: eq no_link
-  res.body.data.Content: eq no_content
+  res.body.data.Content: eq null
   res.body.data.Corretted_Content: eq null
 }
 

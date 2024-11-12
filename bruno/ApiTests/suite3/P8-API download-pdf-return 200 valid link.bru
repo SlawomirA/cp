@@ -1,7 +1,7 @@
 meta {
-  name: P8-API-getBase64PdfFromLink download-pdf-return200
+  name: P8-API download-pdf-return 200 valid link
   type: http
-  seq: 5
+  seq: 6
 }
 
 get {
@@ -17,4 +17,5 @@ params:query {
 assert {
   res.status: eq 200
   res.body.pdf: isDefined
+  res.headers['content-type']: eq application/json
 }

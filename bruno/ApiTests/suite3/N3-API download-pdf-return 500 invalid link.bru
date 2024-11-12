@@ -1,7 +1,7 @@
 meta {
-  name: N3-API-getBase64invalidLink download-pdf-return500
+  name: N3-API download-pdf-return 500 invalid link
   type: http
-  seq: 7
+  seq: 8
 }
 
 get {
@@ -16,4 +16,5 @@ params:query {
 
 assert {
   res.status: eq 500
+  res.headers['content-type']: eq application/json
 }

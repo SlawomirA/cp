@@ -1,0 +1,28 @@
+meta {
+  name: N8-API extract-keywords 422 invalid parameter2
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{apigw}}/extract-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "request": null
+  }
+}
+
+body:text {
+  invalid body
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq string_type
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Input should be a valid string
+}
