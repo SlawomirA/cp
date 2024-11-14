@@ -46,8 +46,8 @@ def test_file_content(client, db_session):
 
 def test_file_content_not_found(client, db_session):
     response = client.get("/file-content/?fileId=9999")
-    assert response.status_code == 500
-    assert response.json()["detail"] == "404: File not found"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "File not found"
 
 
 def test_file_content_error_handling(client, mocker):
@@ -68,8 +68,8 @@ def test_file_corrected_content(client, db_session):
 
 def test_file_corrected_content_not_found(client, db_session):
     response = client.get("/file-corrected-content/?fileId=9999")
-    assert response.status_code == 500
-    assert response.json()["detail"] == "404: File not found"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "File not found"
 
 
 def test_file_corrected_content_error_handling(client, mocker):
