@@ -30,7 +30,7 @@ from src.models import File_Model
 
 router = APIRouter()
 
-pytesseract.tesseract_cmd = r'D:\Programowanie\TesseractOCR\tesseract.exe' #r'C:\Program Files\Tesseract-OCR\tesseract.exe' #
+pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' #r'D:\Programowanie\TesseractOCR\tesseract.exe'
 nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
@@ -44,8 +44,7 @@ class PDFUrlResponse(BaseModel):
 async def download_pdf(url: str):
     try:
         response = requests.get(url)
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
+        check_download_pdf_response(response)
 
         parsed_url = urlparse(url)
         filename = os.path.basename(parsed_url.path)
@@ -70,14 +69,19 @@ async def download_pdf(url: str):
 async def download_pdf(url: str):
     try:
         response = requests.get(url)
-        if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
-
+        check_download_pdf_response(response)
         pdf_buffer = base64.b64encode(response.content).decode('utf-8')
         return {"pdf": pdf_buffer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+def check_download_pdf_response(response):
+    print(response.headers.get('content-type'))
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Failed to download the PDF.")
+    elif not response.headers.get('content-type').startswith('application/pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF download links are allowed.")
 
 @router.get("/scrape-pdfs/", tags=["etap1"])
 async def scrape_pdfs(start_url: str):
@@ -144,7 +148,7 @@ class CorrectTextInput(BaseModel):
 async def correct_text(correct_text: CorrectTextInput):
     try:
         original_text = correct_text.input_text
-        corrected_text = str(tool.correct(original_text))
+        corrected_text = tool.correct(original_text)
 
         sanitized_text = original_text.replace("\r\n", "\n").replace("\r", "\n")
 

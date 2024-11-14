@@ -1,0 +1,26 @@
+meta {
+  name: P7-API save-corrected-text 200
+  type: http
+  seq: 24
+}
+
+patch {
+  url: {{apigw}}/save-corrected-text
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileId": {{fileID}},
+    "corrected_text": "correctedText"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.code: eq 200
+  res.body.message: eq OK
+  res.body.data: eq true
+  res.body.error: eq null
+}

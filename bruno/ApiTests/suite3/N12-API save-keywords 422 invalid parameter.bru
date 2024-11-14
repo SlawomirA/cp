@@ -1,0 +1,24 @@
+meta {
+  name: N12-API save-keywords 422 invalid parameter
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{apigw}}/save-keywords
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fileId": {{fileID}}
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.body.detail[0].msg: eq Field required
+  res.headers['content-type']: eq application/json
+}

@@ -1,0 +1,22 @@
+meta {
+  name: N13-API download-corrected-txt 422 invalid param2
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{apigw}}/download-corrected-txt/?param=invalid
+  body: none
+  auth: none
+}
+
+params:query {
+  param: invalid
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Field required
+}

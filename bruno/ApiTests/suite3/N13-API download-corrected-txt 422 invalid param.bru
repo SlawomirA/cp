@@ -1,0 +1,22 @@
+meta {
+  name: N13-API download-corrected-txt 422 invalid param
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{apigw}}/download-corrected-txt/?fileId=test
+  body: none
+  auth: none
+}
+
+params:query {
+  fileId: test
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq int_parsing
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Input should be a valid integer, unable to parse string as an integer
+}

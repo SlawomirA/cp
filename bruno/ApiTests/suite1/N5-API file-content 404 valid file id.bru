@@ -1,0 +1,21 @@
+meta {
+  name: N5-API file-content 404 valid file id
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{apigw}}/file-content/?fileId=0
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  fileId: 0
+}
+
+assert {
+  res.status: eq 404
+  res.body.detail: eq File not found
+  res.headers['content-type']: eq application/json
+}

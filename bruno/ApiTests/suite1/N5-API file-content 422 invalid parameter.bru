@@ -1,0 +1,22 @@
+meta {
+  name: N5-API file-content 422 invalid parameter
+  type: http
+  seq: 19
+}
+
+get {
+  url: {{apigw}}/file-content/?param=invalid
+  body: multipartForm
+  auth: none
+}
+
+params:query {
+  param: invalid
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq missing
+  res.headers['content-type']: eq application/json
+  res.body.detail[0].msg: eq Field required
+}

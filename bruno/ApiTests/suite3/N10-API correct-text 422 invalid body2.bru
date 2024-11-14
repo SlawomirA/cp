@@ -1,0 +1,30 @@
+meta {
+  name: N10-API correct-text 422 invalid body2
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{apigw}}/correct-text
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "input_text": 0
+  }
+}
+
+body:text {
+  {
+    "input_text": 0
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.detail[0].type: eq string_type
+  res.body.detail[0].msg: eq Input should be a valid string
+  res.headers['content-type']: eq application/json
+}

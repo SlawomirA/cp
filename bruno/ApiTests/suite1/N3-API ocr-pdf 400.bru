@@ -1,0 +1,20 @@
+meta {
+  name: N3-API ocr-pdf 400
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{apigw}}/ocr-pdf
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(..\files\notPdf.txt)
+}
+
+assert {
+  res.status: eq 400
+  res.body.detail: eq Only PDF files are allowed.
+}
