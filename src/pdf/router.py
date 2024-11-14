@@ -35,6 +35,7 @@ nlp = spacy.load("pl_core_news_sm")
 tool = language_tool_python.LanguageTool('pl')
 model = KeyBERT('distilbert-base-nli-mean-tokens')
 
+
 class PDFUrlResponse(BaseModel):
     pdf_urls: List[str]
 
@@ -61,9 +62,6 @@ async def download_pdf(url: str):
             "message": "PDF downloaded successfully",
             "file_path": str(file_path)
         }
-
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -77,9 +75,6 @@ async def download_pdf(url: str):
 
         pdf_buffer = base64.b64encode(response.content).decode('utf-8')
         return {"pdf": pdf_buffer}
-
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -290,9 +285,8 @@ async def load_pdf_data(url: str, file: UploadFile = File(...), db: Session = De
 
             return DetailedResponse(code=201, message="File successfully saved", data=response_data)
 
-        except Exception as e:
+        except Exception:
             db.rollback()
-            print(f"Error occurred while saving file: {e}")
             raise HTTPException(status_code=500, detail="Error occurred while saving the file")
     finally:
         os.remove(temp_file_path)
